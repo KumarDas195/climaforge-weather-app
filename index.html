@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Weather</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</head>
+<body>
+  <div class="bg-orb orb-1" style="z-index:0"></div>
+  <div class="bg-orb orb-2" style="z-index:0"></div>
+  <div class="bg-orb orb-3" style="z-index:0"></div>
+  <div class="noise"></div>
+ <div class="relative z-10 flex flex-col lg:flex-row min-h-screen p-3 lg:p-5 gap-4 lg:gap-5">
+    <aside class="glass rounded-3xl flex flex-col w-full lg:w-80 shrink-0 p-6 gap-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="icon-badge" style="background:linear-gradient(135deg,#4d7cff,#a855f7)">
+           <i class="fa-solid fa-cloud-sun text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight">ClimaForge</h1>
+          <p class="text-xs text-white/40 font-mono">Live Weather Intelligence</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <div class="w-[80%] flex items-center gap-2 glass-light rounded-2xl px-4 py-3 focus-within:border-brand-500 transition-all duration-300" style="border-color:rgba(77,124,255,0.4);">
+          <i class="fa-solid fa-location-dot text-white/30 text-sm"></i>
+          <input id="cityInput" type="text" placeholder="Search city..."
+          class="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/30"
+          onkeydown="if(event.key==='Enter')getWeather()">
+        </div>
+        <button onclick="getWeather()" class="btn-search rounded-2xl w-12 h-12 shrink-0 flex items-center justify-center text-white shadow-lg">
+          <i class="fa-solid fa-magnifying-glass text-sm"></i>
+        </button>
+      </div>
+      <p class="text-xs text-white/35 font-semibold tracking-widest uppercase mt-1">Saved Cities</p>
+      <div class="sidebar-scroll flex flex-col gap-3">
+        <div class="city-card glass-light rounded-2xl p-4" onclick="quickSearch('Bhagalpur')">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-white/40 mb-1">Bihar, IN</p>
+              <h3 class="font-bold text-lg">Bhagalpur</h3>
+              <p class="text-xs text-white/50 mt-0.5" id="sc-cond-bhagalpur">—</p>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-black" style="background:linear-gradient(white,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="sc-temp-bhagalpur">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="city-card glass-light rounded-2xl p-4" onclick="quickSearch('Mumbai')">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-white/40 mb-1">Maharashtra, IN</p>
+              <h3 class="font-bold text-lg">Mumbai</h3>
+              <p class="text-xs text-white/50 mt-0.5" id="sc-cond-mumbai">—</p>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-black" style="background:linear-gradient(white,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="sc-temp-mumbai">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="city-card glass-light rounded-2xl p-4" onclick="quickSearch('Bhopal')">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-white/40 mb-1">MP, India</p>
+              <h3 class="font-bold text-lg">Bhopal</h3>
+              <p class="text-xs text-white/50 mt-0.5" id="sc-cond-bhopal">—</p>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-black" style="background:linear-gradient(white,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="sc-temp-bhopal">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="city-card glass-light rounded-2xl p-4" onclick="quickSearch('Bengaluru')">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-white/40 mb-1">Karnataka, IN</p>
+              <h3 class="font-bold text-lg">Bangalore</h3>
+              <p class="text-xs text-white/50 mt-0.5" id="sc-cond-Bengaluru">—</p>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-black" style="background:linear-gradient(white,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="sc-temp-Bengaluru">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+        <p class="text-xs text-white/25">Powered by WeatherAPI</p>
+        <div class="pill"><i class="fa-solid fa-circle text-emerald-400 text-xs animate-pulse"></i> Live</div>
+      </div>
+    </aside>
+    <main class="flex-1 flex flex-col gap-5 min-w-0 main-scroll">
+      <section>
+        <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-10" style="background:radial-gradient(circle,#4d7cff,transparent);pointer-events:none"></div>
+        <div class="flex items-start justify-between flex-wrap gap-6">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-2 flex-wrap">
+              <h2 id="cityName" class="text-4xl font-black tracking-tight">—</h2>
+              <div class="pill text-xs"><i class="fa-solid fa-location-dot text-brand-400"></i><span id="countryName">—</span></div>
+            </div>
+            <p id="localTime" class="text-white/40 text-sm font-mono mb-4">—</p>
+            <div class="temp-display" id="temperature">—°</div>
+            <div class="flex items-center gap-4 mt-4 flex-wrap">
+              <div class="flex items-center gap-2">
+                <img id="condIcon" src="" class="w-10 h-10 wx-icon" alt="">
+                <p id="condition" class="text-xl font-semibold text-white/80">—</p>
+              </div>
+              <div class="pill"><i class="fa-solid fa-temperature-half text-brand-400"></i> Feels <span id="feelsLike" class="ml-1">—</span></div>
+              <div class="pill"><i class="fa-solid fa-droplet text-sky-400"></i> <span id="precipitation" class="ml-1">—</span> mm</div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 text-right shrink-0">
+            <div class="glass-light rounded-2xl px-5 py-3 text-center">
+              <p class="text-xs text-white/35 mb-1"><i class="fa-solid fa-sun text-amber-400 mr-1"></i>Sunrise</p>
+              <p id="sunrise" class="font-bold text-lg">—</p>
+            </div>
+            <div class="glass-light rounded-2xl px-5 py-3 text-center">
+              <p class="text-xs text-white/35 mb-1"><i class="fa-solid fa-moon text-indigo-300 mr-1"></i>Sunset</p>
+              <p id="sunset" class="font-bold text-lg">—</p>
+            </div>
+            <div class="glass-light rounded-2xl px-5 py-3 text-center">
+              <p class="text-xs text-white/35 mb-1"><i class="fa-solid fa-temperature-arrow-up text-rose-400 mr-1"></i>High / Low</p>
+              <p id="highlow" class="font-bold text-lg">—</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="glass rounded-3xl p-6 fade-up" style="animation-delay:0.2s">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-bold text-white/70 text-sm tracking-widest uppercase">24-Hour Forecast</h3>
+          <div class="pill text-xs"><i class="fa-regular fa-clock text-brand-400"></i> Hourly</div>
+        </div>
+        <div id="hourlyForecast" class="flex gap-3 overflow-x-auto pb-2"></div>
+      </section>
+      <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-up" style="animation-delay:0.3s">
+        <div class="stat-card glass-light rounded-2xl p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="icon-badge" style="background:rgba(56,189,248,0.15)"><i class="fa-solid fa-droplet text-sky-400"></i></div>
+            <p class="text-xs text-white/40 font-semibold tracking-widest uppercase">Humidity</p>
+          </div>
+          <div id="humidity" class="text-4xl font-black mb-1">—</div>
+          <div class="w-full h-1.5 rounded-full mt-3" style="background:rgba(255,255,255,0.06)">
+            <div id="humidityBar" class="h-full rounded-full transition-all duration-700" style="background:linear-gradient(to right,#38bdf8,#818cf8);width:0%"></div>
+          </div>
+        </div>
+        <div class="stat-card glass-light rounded-2xl p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="icon-badge" style="background:rgba(99,102,241,0.15)"><i class="fa-solid fa-wind text-indigo-400"></i></div>
+            <p class="text-xs text-white/40 font-semibold tracking-widest uppercase">Wind</p>
+          </div>
+          <div class="flex items-end gap-2">
+            <div id="wind" class="text-4xl font-black">—</div>
+            <div class="text-white/40 text-sm mb-1">km/h</div>
+          </div>
+          <p id="windDir" class="text-xs text-white/40 mt-3"><i class="fa-solid fa-compass mr-1 text-indigo-400"></i>—</p>
+        </div>
+        <div class="stat-card glass-light rounded-2xl p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="icon-badge" style="background:rgba(251,191,36,0.15)"><i class="fa-solid fa-eye text-amber-400"></i></div>
+            <p class="text-xs text-white/40 font-semibold tracking-widest uppercase">Visibility</p>
+          </div>
+          <div class="flex items-end gap-2">
+            <div id="visibility" class="text-4xl font-black">—</div>
+            <div class="text-white/40 text-sm mb-1">km</div>
+          </div>
+          <p class="text-xs text-white/40 mt-3" id="visibilityLabel">—</p>
+        </div>
+        <div class="stat-card glass-light rounded-2xl p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="icon-badge" style="background:rgba(251,146,60,0.15)"><i class="fa-solid fa-sun text-orange-400"></i></div>
+            <p class="text-xs text-white/40 font-semibold tracking-widest uppercase">UV Index</p>
+          </div>
+          <div id="uv" class="text-4xl font-black mb-1">—</div>
+          <div class="uv-bar w-full mt-3 rounded-full overflow-hidden relative" style="height:8px">
+            <div id="uvIndicator" class="absolute top-0 h-full w-1 bg-white rounded-full transition-all duration-700" style="left:0%"></div>
+          </div>
+          <p id="uvLabel" class="text-xs text-white/40 mt-2">—</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 fade-up" style="animation-delay:0.4s">
+        <div class="stat-card glass-light rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="icon-badge" style="background:rgba(52,211,153,0.15)"><i class="fa-solid fa-lungs text-emerald-400"></i></div>
+              <p class="text-xs text-white/40 font-semibold tracking-widest uppercase">Air Quality Index</p>
+            </div>
+            <div id="aqiBadge" class="pill text-xs">—</div>
+          </div>
+          <div class="text-5xl font-black mb-5" id="aqi">—</div>
+          <div class="relative">
+            <div class="aqi-bar w-full"></div>
+            <div class="aqi-indicator" id="aqiDot" style="left:30%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-white/25 mt-4 font-mono">
+            <span>0</span><span>Good</span><span>Moderate</span><span>Unhealthy</span><span>300+</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mt-5">
+            <div class="glass rounded-xl p-3 text-center">
+              <p class="text-xs text-white/30 mb-1">PM2.5</p>
+              <p id="pm25" class="font-bold text-sm">—</p>
+            </div>
+            <div class="glass rounded-xl p-3 text-center">
+              <p class="text-xs text-white/30 mb-1">PM10</p>
+              <p id="pm10" class="font-bold text-sm">—</p>
+            </div>
+            <div class="glass rounded-xl p-3 text-center">
+              <p class="text-xs text-white/30 mb-1">CO</p>
+              <p id="co" class="font-bold text-sm">—</p>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card glass-light rounded-2xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="icon-badge" style="background:rgba(168,85,247,0.15)"><i class="fa-solid fa-calendar-days text-purple-400"></i></div>
+            <p class="text-xs text-white/40 font-semibold tracking-widest uppercase">7-Day Forecast</p>
+          </div>
+          <div id="forecast" class="flex flex-col"></div>
+        </div>
+     </div>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
